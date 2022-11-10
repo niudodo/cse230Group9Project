@@ -1,4 +1,4 @@
-Proposal 
+#Proposal 
 ## Goal
 
 To implement a Brick Out game with Haskell with basic UI.
@@ -13,6 +13,6 @@ Our project is based on Haskell and the 'brick' library to complete a game of hi
 
 We plan to use haskell to implement the game logic including position updating, collision detection, paddle movement and score mechanism, during which we will get a deeper insight of the haskell language.
 
-# Member
+## Member
 
 This project will be done by Xiaolong Dai, Junliang Liu, Shujing Zhang, Yinliang Wang.
