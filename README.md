@@ -16,4 +16,4 @@ We plan to use haskell to implement the game logic including position updating, 
 
 ## Member
 
-This project will be done by Xiaolong Dai, Junliang Liu, Shujing Zhang, Yinliang Wang.
+This project will be done by group 9 of CSE230-22fall with members of Xiaolong Dai, Junliang Liu, Shujing Zhang, Yinliang Wang.
