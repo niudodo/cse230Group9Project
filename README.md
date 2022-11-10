@@ -1,4 +1,5 @@
-# Proposal 
+# BreakOut with Haskell
+
 ## Goal
 
 To implement a Brick Out game with Haskell with basic UI.
