@@ -23,7 +23,7 @@ This project will be done by group 9 of CSE230-22fall with members of Xiaolong D
 
 ### Architecture
 
-Our project will use the MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the Terminal UI (TUI) with the 'bricks' library. 3. Control, which contains the control logic and the interaction logic. 
+Our project will use the MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the Terminal UI (TUI) with State and the 'bricks' library. 3. Control, which contains the control logic and the interaction logic. 
 <center><img width=75% src="mvc.png"></img></center>
 
 ### Challenges
