@@ -26,5 +26,9 @@ After doing some further investigation into the Haskell library, we found that t
 ### Architecture
 
 Our project will use MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the Terminal UI (TUI) with the 'bricks' library. 3. Control, which contains the control logic and the interaction logic.
+<center><img width=75% src="mvc.png"></img></center>
 
+
+#### Reference 
+1. [MVC](https://developer.mozilla.org/en-US/docs/Glossary/MVC)
 
