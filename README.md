@@ -17,3 +17,11 @@ We plan to use haskell to implement the game logic including position updating, 
 ## Member
 
 This project will be done by group 9 of CSE230-22fall with members of Xiaolong Dai, Junliang Liu, Shujing Zhang, Yinliang Wang.
+
+## Updates
+
+After doing some further investigation into the Haskell library, we found that the UI library we originally planned to use might not give the better effect. We planned to use TUI but the moving path of the ball is mostly diagonal. As TUI is based on character, we have to round the location of the ball. 
+
+### Architecture
+
+Our project will use MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the TUI with the 'bricks' library. 3. Control, which contains the control logic.
