@@ -23,24 +23,24 @@ This project will be done by group 9 of CSE230-22fall with members of Xiaolong D
 
 ### Architecture
 
-Our project will use MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the Terminal UI (TUI) with the 'bricks' library. 3. Control, which contains the control logic and the interaction logic.
+Our project will use the MVC architecture. The project is mainly divided into three parts: 1. Model, which defines the data structures. 2. View, which defines the display and generates the Terminal UI (TUI) with the 'bricks' library. 3. Control, which contains the control logic and the interaction logic. 
 <center><img width=75% src="mvc.png"></img></center>
 
 ### Challenges
-After doing some further investigation into the Haskell library, we found that the UI library we originally planned to use might not give the better effect. We planned to use TUI but the moving path of the ball is mostly diagonal. As TUI is based on character, we have to round the location of the ball. 
+After doing some further investigation into the Haskell library, we found that the UI library we originally planned to use might not give the better effect. We planned to use TUI but the moving path of the ball is mostly diagonal. As TUI is based on character, we have to round the location of the ball.  
 
 ### Timeline
 
-11.25 Finish basic functions, including models, control units and part of the visualization.
-12.2  Add more on the TUI of the project. 
-12.6  Finish project and prepare for the presentation
+11/25 Finish basic functions, including models, control units and part of the visualization.  
+12/2  Add more on the TUI of the project.   
+12/6  Finish project and prepare for the presentation  
 
 ### Expectations
 
-We expect to meet our goals until the deadline
+We expect to meet our goals until the deadline  
 
 
 
 #### Reference 
-1. [MVC](https://developer.mozilla.org/en-US/docs/Glossary/MVC)
+1. [MVC](https://developer.mozilla.org/en-US/docs/Glossary/MVC)  
 
