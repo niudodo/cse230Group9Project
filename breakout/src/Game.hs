@@ -1,7 +1,8 @@
 module Game where
     
 import Object
-import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime)
+import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
+import Data.Time (NominalDiffTime)
 
 data Game = Game {
     mode :: GameMode,
@@ -18,18 +19,30 @@ data GameMode = Play | Start | Over
     deriving (Eq, Show)
 
 gameLoop :: Game -> IO ()
-gameLoop game@Game{mode, startTime, lastStepTime, bat, ball, bricks} = do 
-    let curTime = getCurrentTime
-    let timeDiff = curTime - lastStepTime
+gameLoop Game {mode = Start} = putStrLn "Push to Start"
+gameLoop g = do
+    curTime <- getCurrentTime
+    let timeDiff = diffUTCTime curTime (lastStepTime g)
 
-    let game' = processGame timeDiff game
+    let game' = processGame timeDiff g
 
     if mode game' == Play then 
         gameLoop game'
-    else return
+    else putStrLn "test"
     
-processGame :: NorminalDiffTime -> Game -> Game 
-processGame t g@Game{mode, startTime, lastStepTime, bat, ball, bricks} = 
+processGame :: NominalDiffTime -> Game -> Game 
+processGame t g = 
     -- update lastStepTime, bat, bricks
-    Game {mode, startTime, (addUTCTime lastStepTime t),
-         updateBat t bat, updateBall t ball, updateBrick}
+         g -- {bat = updateBat t bat, ball = updateBall t ball, bricks = updateBricks t bricks}
+
+updateBat :: NominalDiffTime -> Bat -> Bat 
+updateBat t b =
+    b -- todo b + v * t
+
+updateBall :: NominalDiffTime -> Ball -> Ball 
+updateBall t b =
+    b 
+
+updateBricks :: NominalDiffTime -> [Brick] -> [Brick]
+updateBricks t b =
+    b
