@@ -3,18 +3,18 @@ module Object where
 import Geometry
 
 data Ball = Ball {
-    bposition :: Vector,
-    bvelocity :: Vector
-}
+    bposition :: Vector2D,
+    bvelocity :: Vector2D
+} deriving (Eq, Show)
 
 data Bat = Bat {
-    batposition :: Vector,
+    batposition :: Int,
     bwidth :: Int,
-    batv :: Double
-}
+    batvelocity :: Double
+} deriving (Eq, Show)
 
 data Brick = Brick {
-    briposition :: Vector,
+    briposition :: Vector2D,
     briWidth :: Double,
     briHeight :: Double
-}
+} deriving (Eq, Show)
