@@ -9,9 +9,10 @@ module Breakout (
     
 import Object 
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
-import Data.Time (NominalDiffTime)
+import Data.Time (NominalDiffTime, UTCTime (utctDayTime))
 import Object (Ball(bposition, bvelocity), Bat (batposition, batvelocity))
 import Geometry ( Vector2D, (^+^), (^*^), Vector2 (Vector2) )
+import GHC.Float (int2Double)
 
 data Breakout = Breakout {
     mode :: GameMode,
@@ -65,47 +66,52 @@ updateBall t b g =
         Collision p t' bricks -> getNewBall t' b
         None -> newBall
     where newBall = getNewBall t b 
-          collision = checkCollision newBall g
+          collision = checkCollision t newBall g
 
-checkCollision :: Ball -> Breakout -> Collision
-checkCollision ball g = do
-        curTime <- getCurrentTime
 
+checkCollision :: Double -> Ball -> Breakout ->  Collision
+checkCollision curTime ball g = do
+    let collBat = checkCollBat ball (bat g) (bricks g) curTime
+    let collBoard = checkBorder ball (bricks g) (board g) curTime
+    let collBrick = checkBricks ball [] (bricks g) curTime
+    if collBat /= None
+        then collBat
+    else if collBoard /= None 
+        then collBoard
+    else  
+        collBrick
     where
-        checkBricks ball _ [] = None
-        checkBricks ball prev [x:xs] = 
-            case checkWithinBrick x of
-                None -> checkBricks ball (prev++x) xs
-                _ -> Collision (bposition ball) curTime prev++xs 
+        checkBricks:: Ball -> [Brick] -> [Brick]-> Double-> Collision
+        checkBricks ball _ [] curTime = None
+        checkBricks ball prev (x:xs) curTime
+            | checkWithinBrick ball x = checkBricks ball (prev++[x]) xs curTime
+            | otherwise = Collision ball curTime (prev++xs) 
 
 
 -- assume brick position is the upper left corner of the brick
-checkWithinBrick:: Ball -> Brick -> Brick
+checkWithinBrick:: Ball -> Brick -> Bool
 checkWithinBrick ball brick = do
     let Vector2 ballx bally = bposition ball
     let Vector2 brickx bricky = briposition brick
     let bw = briWidth brick
     let bh = briHeight brick 
-    if ballx >= brickx && ballx <= brickx + bw && bally >= bricky && bally <= bricky + bh
-        then brick
-    else
-        None
+    ballx >= brickx && ballx <= brickx + bw && bally >= bricky && bally <= bricky + bh
 
-checkBorder::Ball -> [Brick] -> Board -> UTCTime-> Collision
+checkBorder::Ball -> [Brick] -> Board -> Double-> Collision
 checkBorder ball bricks board t= do
-    let boardW = boardWidth board 
-    let boardH = boardHeight board
+    let boardW = int2Double (boardWidth board)
+    let boardH = int2Double (boardHeight board)
     let Vector2 ballx bally = bposition ball
     if ballx <=0 || bally<= 0 || bally >= boardH || ballx >= boardW
-        then Collision (bposition ball) t bricks
+        then Collision ball t bricks
     else None
 
 -- assume bat position is left corner
-checkCollBat:: Ball ->[Brick] -> Board->UTCTime -> Collision
-checkCollBat ball brick board t = do
+checkCollBat:: Ball -> Bat ->[Brick] ->Double -> Collision
+checkCollBat ball bat brick t = do
     let Vector2 ballx bally = bposition ball
-    if bally >= bheight bat && ballx >= batposition bat && ballx <= (batposition bat) + (bwith bat)
-        then Collision (bposition ball) t brick
+    if bally >= int2Double (bheight bat) && ballx >= int2Double (batposition bat) && ballx <= int2Double (batposition bat + bwidth bat)
+        then Collision ball t brick
     else None
     
 
@@ -114,7 +120,7 @@ getNewBall t b = b {bposition = orig ^+^ (t ^*^ v)}
                 where orig = bposition b
                       v = bvelocity b
                       
-data Collision = Collision {position :: Vector2D, 
+data Collision = Collision {cball :: Ball, 
                             time :: Double, cbricks :: [Brick]} | None
     deriving (Eq, Show)
 
