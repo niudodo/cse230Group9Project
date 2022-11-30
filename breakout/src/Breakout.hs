@@ -11,7 +11,7 @@ import Object
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime)
 import Object (Ball(bposition, bvelocity), Bat (batposition, batvelocity))
-import Geometry ( Vector2D, (^+^), (^*^) )
+import Geometry ( Vector2D, (^+^), (^*^), Vector2 (Vector2) )
 
 data Breakout = Breakout {
     mode :: GameMode,
@@ -68,7 +68,46 @@ updateBall t b g =
           collision = checkCollision newBall g
 
 checkCollision :: Ball -> Breakout -> Collision
-checkCollision ball g = None -- todo
+checkCollision ball g = do
+        curTime <- getCurrentTime
+
+    where
+        checkBricks ball _ [] = None
+        checkBricks ball prev [x:xs] = 
+            case checkWithinBrick x of
+                None -> checkBricks ball (prev++x) xs
+                _ -> Collision (bposition ball) curTime prev++xs 
+
+
+-- assume brick position is the upper left corner of the brick
+checkWithinBrick:: Ball -> Brick -> Brick
+checkWithinBrick ball brick = do
+    let Vector2 ballx bally = bposition ball
+    let Vector2 brickx bricky = briposition brick
+    let bw = briWidth brick
+    let bh = briHeight brick 
+    if ballx >= brickx && ballx <= brickx + bw && bally >= bricky && bally <= bricky + bh
+        then brick
+    else
+        None
+
+checkBorder::Ball -> [Brick] -> Board -> UTCTime-> Collision
+checkBorder ball bricks board t= do
+    let boardW = boardWidth board 
+    let boardH = boardHeight board
+    let Vector2 ballx bally = bposition ball
+    if ballx <=0 || bally<= 0 || bally >= boardH || ballx >= boardW
+        then Collision (bposition ball) t bricks
+    else None
+
+-- assume bat position is left corner
+checkCollBat:: Ball ->[Brick] -> Board->UTCTime -> Collision
+checkCollBat ball brick board t = do
+    let Vector2 ballx bally = bposition ball
+    if bally >= bheight bat && ballx >= batposition bat && ballx <= (batposition bat) + (bwith bat)
+        then Collision (bposition ball) t brick
+    else None
+    
 
 getNewBall :: Double -> Ball -> Ball
 getNewBall t b = b {bposition = orig ^+^ (t ^*^ v)}
