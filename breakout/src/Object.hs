@@ -10,6 +10,7 @@ data Ball = Ball {
 data Bat = Bat {
     batposition :: Int,
     bwidth :: Int,
+    bheight :: Int,
     batvelocity :: Double
 } deriving (Eq, Show)
 
