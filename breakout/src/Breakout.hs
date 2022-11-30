@@ -21,7 +21,7 @@ data Breakout = Breakout {
 
     bat :: Bat,
     ball :: Ball,
-    bricks :: [Brick]
+    bricks :: [Brick],
     board :: Board
 }
 
