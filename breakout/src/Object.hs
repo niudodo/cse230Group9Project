@@ -18,3 +18,8 @@ data Brick = Brick {
     briWidth :: Double,
     briHeight :: Double
 } deriving (Eq, Show)
+
+data Board = Board {
+    boardWidth :: Int,
+    boardHeight :: Int
+} deriving (Eq, Show)
