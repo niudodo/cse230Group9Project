@@ -29,6 +29,9 @@ data Breakout = Breakout {
 data GameMode = Play | Start | Over
     deriving (Eq, Show)
 
+ballRadius :: Double
+ballRadius = 5.0
+
 gameLoop :: Breakout -> IO ()
 gameLoop Breakout {mode = Start} = putStrLn "Push to Start"
 gameLoop g = do
@@ -84,35 +87,59 @@ checkCollision curTime ball g = do
         checkBricks:: Ball -> [Brick] -> [Brick]-> Double-> Collision
         checkBricks ball _ [] curTime = None
         checkBricks ball prev (x:xs) curTime
-            | checkWithinBrick ball x = checkBricks ball (prev++[x]) xs curTime
-            | otherwise = Collision ball curTime (prev++xs) 
+            | checkWithinBrick ball x /=0 = Collision (reflectBall ball (checkWithinBrick ball x) (Vector2 0.0 0.0) curTime (prev++xs) 
+            | otherwise = checkBricks ball (prev++[x]) xs curTime
 
 
 -- assume brick position is the upper left corner of the brick
-checkWithinBrick:: Ball -> Brick -> Bool
+checkWithinBrick:: Ball -> Brick -> Int
 checkWithinBrick ball brick = do
     let Vector2 ballx bally = bposition ball
     let Vector2 brickx bricky = briposition brick
     let bw = briWidth brick
     let bh = briHeight brick 
-    ballx >= brickx && ballx <= brickx + bw && bally >= bricky && bally <= bricky + bh
+    -- if ball hit on leftside/right of brick
+    if (ballx + ballRadius >= brickx && ballx <= bricky && bally && bally >= bricky && bally <= bricky + bh)
+        ||( ballx - ballRadius <= brickx + bw && ballx >= brickX + bw && bally && bally >= bricky && bally <= bricky + bh)
+        then 2
+    -- if ball hit on top/bottom of brick
+    else if (bally + ballRadius >= bricky && bally <= bricky && ballx >= brickx && ballx <= brickx + bw)
+        ||( bally - ballRadius <= bricky + bh && bally >= bricky + bh && ballx >= brickx && ballx <= brickx + bh)
+        then 1
+    else 0
 
 checkBorder::Ball -> [Brick] -> Board -> Double-> Collision
 checkBorder ball bricks board t= do
     let boardW = int2Double (boardWidth board)
     let boardH = int2Double (boardHeight board)
     let Vector2 ballx bally = bposition ball
-    if ballx <=0 || bally<= 0 || bally >= boardH || ballx >= boardW
-        then Collision ball t bricks
+    if ballx <=0 || ballx >= boardW
+        then Collision (reflectBall ball 2 (Vector2 0.0 0.0)) t bricks
+    else if bally <=0 || bally >= boardH
+        then Collision (reflectBall ball 1 (Vector2 0.0 0.0)) t bricks
     else None
+
 
 -- assume bat position is left corner
 checkCollBat:: Ball -> Bat ->[Brick] ->Double -> Collision
 checkCollBat ball bat brick t = do
     let Vector2 ballx bally = bposition ball
-    if bally >= int2Double (bheight bat) && ballx >= int2Double (batposition bat) && ballx <= int2Double (batposition bat + bwidth bat)
-        then Collision ball t brick
+    if bally + ballRadius >= int2Double (bheight bat) && ballx >= int2Double (batposition bat) && ballx <= int2Double (batposition bat + bwidth bat)
+        then Collision (reflectBall ball 1 (batvelocity bat)) t brick
     else None
+
+
+-- 1 for vertical 
+-- 2 for horizontial 
+reflectBall:: Ball -> Int -> Vector2D -> Ball
+reflectBall ball dir offset = Ball pos velocity
+    where
+        pos = bposition ball
+        Vector2 xv yv = bvelocity ball
+        Vector2 offsetX offsetY = offset
+        velocity = case dir of 
+            1 -> Vector2 (xv+offsetX) (-1.0 * yv + offsetY)  
+            _ -> Vector2 (-1.0 * xv + offsetX) (offsetY+yv) 
     
 
 getNewBall :: Double -> Ball -> Ball
