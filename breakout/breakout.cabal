@@ -25,10 +25,11 @@ source-repository head
 
 library
   exposed-modules:
-      Game
+      Breakout
       Geometry
       Lib
       Object
+      UI
   other-modules:
       Paths_breakout
   hs-source-dirs:
