@@ -87,7 +87,7 @@ checkCollision curTime ball g = do
         checkBricks:: Ball -> [Brick] -> [Brick]-> Double-> Collision
         checkBricks ball _ [] curTime = None
         checkBricks ball prev (x:xs) curTime
-            | checkWithinBrick ball x /=0 = Collision (reflectBall ball (checkWithinBrick ball x) (Vector2 0.0 0.0) curTime (prev++xs) 
+            | checkWithinBrick ball x /=0 = Collision (reflectBall ball (checkWithinBrick ball x) 0.0) curTime (prev++xs) 
             | otherwise = checkBricks ball (prev++[x]) xs curTime
 
 
@@ -99,8 +99,8 @@ checkWithinBrick ball brick = do
     let bw = briWidth brick
     let bh = briHeight brick 
     -- if ball hit on leftside/right of brick
-    if (ballx + ballRadius >= brickx && ballx <= bricky && bally && bally >= bricky && bally <= bricky + bh)
-        ||( ballx - ballRadius <= brickx + bw && ballx >= brickX + bw && bally && bally >= bricky && bally <= bricky + bh)
+    if (ballx + ballRadius >= brickx && ballx <= bricky && bally >= bricky && bally <= bricky + bh)
+        ||( ballx - ballRadius <= brickx + bw && ballx >= brickx + bw && bally >= bricky && bally <= bricky + bh)
         then 2
     -- if ball hit on top/bottom of brick
     else if (bally + ballRadius >= bricky && bally <= bricky && ballx >= brickx && ballx <= brickx + bw)
@@ -114,9 +114,9 @@ checkBorder ball bricks board t= do
     let boardH = int2Double (boardHeight board)
     let Vector2 ballx bally = bposition ball
     if ballx <=0 || ballx >= boardW
-        then Collision (reflectBall ball 2 (Vector2 0.0 0.0)) t bricks
+        then Collision (reflectBall ball 2 0.0) t bricks
     else if bally <=0 || bally >= boardH
-        then Collision (reflectBall ball 1 (Vector2 0.0 0.0)) t bricks
+        then Collision (reflectBall ball 1 0.0 ) t bricks
     else None
 
 
@@ -131,15 +131,14 @@ checkCollBat ball bat brick t = do
 
 -- 1 for vertical 
 -- 2 for horizontial 
-reflectBall:: Ball -> Int -> Vector2D -> Ball
+reflectBall:: Ball -> Int -> Double -> Ball
 reflectBall ball dir offset = Ball pos velocity
     where
         pos = bposition ball
         Vector2 xv yv = bvelocity ball
-        Vector2 offsetX offsetY = offset
         velocity = case dir of 
-            1 -> Vector2 (xv+offsetX) (-1.0 * yv + offsetY)  
-            _ -> Vector2 (-1.0 * xv + offsetX) (offsetY+yv) 
+            1 -> Vector2 (xv + offset) (-1.0 * yv)  
+            _ -> Vector2 (-1.0 * xv + offset) yv 
     
 
 getNewBall :: Double -> Ball -> Ball
