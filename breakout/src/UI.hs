@@ -33,7 +33,7 @@ import Brick.AttrMap
 import Breakout
 import System.Posix.Internals (o_NOCTTY)
 import qualified Distribution.Simple.Setup as V
-import Language.Haskell.TH (VarBangType, NameSpace)
+import Language.Haskell.TH (VarBangType)
 import Control.Monad.RWS (Any(getAny))
 
 data UI = UI {
