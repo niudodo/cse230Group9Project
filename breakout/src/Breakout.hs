@@ -8,13 +8,12 @@ module Breakout (
 ) where
     
 import Object
-    ( Ball(bvelocity, bposition),
-      Bat(batvelocity, batposition),
-      Board,
-      Brick ) 
+    ( Ball(..),
+      Bat(..),
+      Board(..),
+      Brick(..) ) 
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime, UTCTime (utctDayTime))
-import Object (Ball(bposition, bvelocity), Bat (batposition, batvelocity))
 import Geometry ( Vector2D, (^+^), (^*^), Vector2 (Vector2) )
 import GHC.Float (int2Double)
 
@@ -159,3 +158,18 @@ updateBricks :: Double -> [Brick] -> [Brick]
 updateBricks t b =
     b -- todo
 
+genBricks:: Int-> Double ->[Brick]
+genBricks 0 _ = []
+genBricks n posY = genBricksRow 10 0 posY ++ genBricks (n-1) (posY+5)
+
+
+genBricksRow:: Int-> Double -> Double ->[Brick]
+genBricksRow 0 _ _ = []  
+genBricksRow n posX posY = new_brick ++ genBricksRow (n-1) new_posX posY
+    where 
+        new_posX = posX + 5
+        new_brick = [Brick{
+            briposition = Vector2 new_posX posY,
+            briWidth = 5,
+            briHeight = 5
+        }] 
