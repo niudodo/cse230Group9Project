@@ -1,6 +1,8 @@
-module Main (main) where
+module Main (Main.main) where
 
-import Lib (someFunc)
+import UI (main)
+import Brick (simpleMain)
+import Breakout (Breakout)
 
 main :: IO ()
-main = someFunc
+main = UI.main 

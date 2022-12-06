@@ -38,7 +38,11 @@ library
   build-depends:
       base >=4.7 && <5
     , brick
+    , microlens
+    , microlens-mtl
+    , microlens-th
     , time >=1.1
+    , vty >=5.36
   default-language: Haskell2010
 
 executable breakout-exe
@@ -52,7 +56,11 @@ executable breakout-exe
       base >=4.7 && <5
     , breakout
     , brick
+    , microlens
+    , microlens-mtl
+    , microlens-th
     , time >=1.1
+    , vty >=5.36
   default-language: Haskell2010
 
 test-suite breakout-test
@@ -67,5 +75,9 @@ test-suite breakout-test
       base >=4.7 && <5
     , breakout
     , brick
+    , microlens
+    , microlens-mtl
+    , microlens-th
     , time >=1.1
+    , vty >=5.36
   default-language: Haskell2010

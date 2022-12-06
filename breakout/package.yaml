@@ -23,6 +23,10 @@ dependencies:
 - base >= 4.7 && < 5
 - time >= 1.1
 - brick
+- vty >= 5.36
+- microlens
+- microlens-mtl
+- microlens-th
 
 ghc-options:
 - -Wall
