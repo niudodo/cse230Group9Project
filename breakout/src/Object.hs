@@ -1,9 +1,11 @@
 module Object where 
 
 import Geometry
+import qualified Brick.Types as T
+import Brick.Types (locationRowL, locationColumnL, Location(..), Widget)
 
 data Ball = Ball {
-    bposition :: Vector2D,
+    bposition :: T.Location,
     bvelocity :: Vector2D
 } deriving (Eq, Show)
 
@@ -15,9 +17,9 @@ data Bat = Bat {
 } deriving (Eq, Show)
 
 data Brick = Brick {
-    briposition :: Vector2D,
-    briWidth :: Double,
-    briHeight :: Double
+    briposition :: T.Location,
+    briWidth :: Int,
+    briHeight :: Int
 } deriving (Eq, Show)
 
 data Board = Board {
