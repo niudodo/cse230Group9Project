@@ -7,7 +7,11 @@ module Breakout (
     updateBricks
 ) where
     
-import Object 
+import Object
+    ( Ball(bvelocity, bposition),
+      Bat(batvelocity, batposition),
+      Board,
+      Brick ) 
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime)
 import Object (Ball(bposition, bvelocity), Bat (batposition, batvelocity))
