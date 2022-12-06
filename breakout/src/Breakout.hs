@@ -10,7 +10,7 @@ module Breakout (
 import Object
     ( Ball(bvelocity, bposition),
       Bat(batvelocity, batposition),
-      Board,
+      Board(boardWidth, boardHeight),
       Brick ) 
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime)
@@ -19,9 +19,7 @@ import Geometry ( Vector2D, (^+^), (^*^) )
 
 data Breakout = Breakout {
     mode :: GameMode,
-
-    startTime :: UTCTime,
-    lastStepTime :: UTCTime,
+    score :: Int,
 
     bat :: Bat,
     ball :: Ball,
@@ -49,6 +47,19 @@ gameLoop g = do
             -- render
             gameLoop game'
     else putStrLn "test"
+
+initGame :: n -> Breakout 
+initGame n = Breakout {
+    mode = Play,
+    score = 0,
+    bat = Bat {
+        batposition = 50,
+        bwidth = 20,
+        batvelocity = 2
+    },
+    bricks = genBrick n,
+    board = Board {boardHeight = 200, boardWitdth = 100}
+}
 
 processGame :: Double -> Breakout -> Breakout 
 processGame t g = 
