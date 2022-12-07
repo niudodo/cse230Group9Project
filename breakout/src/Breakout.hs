@@ -12,7 +12,7 @@ module Breakout (
     initGame,
     shiftBat,
     timeStep,
-    GameMode
+    GameMode(..)
 ) where
     
 import Object
@@ -41,7 +41,8 @@ data Breakout = Breakout {
     _bat :: Bat,
     _ball :: Ball,
     _bricks :: [Brick],
-    _board :: Board
+    _board :: Board,
+    _life :: Int
 } deriving (Eq, Show)
 makeLenses ''Breakout
 
@@ -121,7 +122,8 @@ initGame n = Breakout {
         bvelocity = (Vector2 0.0 (1.0))
     },
     _bricks = genBricks n 0 , -- TODO
-    _board = Board {boardHeight = 200, boardWidth = 100}
+    _board = Board {boardHeight = 30, boardWidth = 60},
+    _life = 3
 }
 
 updateBat :: Double -> Bat -> Bat 
@@ -228,7 +230,7 @@ data Collision = Collision {cball :: Ball,
 
 genBricks:: Int-> Double ->[Brick]
 genBricks 0 _ = []
-genBricks n posY = genBricksRow 10 0 posY ++ genBricks (n-1) (posY+5)
+genBricks n posY = genBricksRow 10 0 posY ++ genBricks (n-1) (posY+2)
 
 
 genBricksRow:: Int-> Double -> Double ->[Brick]
@@ -239,5 +241,5 @@ genBricksRow n posX posY = new_brick ++ genBricksRow (n-1) new_posX posY
         new_brick = [Brick{
             briposition = Vector2 new_posX posY,
             briWidth = 5,
-            briHeight = 5
+            briHeight = 2
         }] 

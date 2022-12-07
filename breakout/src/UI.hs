@@ -34,7 +34,7 @@ import Brick.AttrMap
   )
 import Brick.BChan
 
-import Breakout (Breakout(..), timeStep, initGame, shiftBat)
+import Breakout (Breakout(..), GameMode(..), timeStep, initGame, shiftBat)
 import Control.Concurrent (threadDelay, forkIO)
 import System.Posix.Internals (o_NOCTTY)
 import qualified Distribution.Simple.Setup as V
@@ -89,15 +89,20 @@ handleShift n = do
 
 
 drawUI :: UI -> [Widget Name]
-drawUI (UI (Breakout mode score bat ball bricks board) _) =
+drawUI (UI (Breakout Start score bat ball bricks board life) _) =
     (drawBricks bricks) ++ 
-    [bottomLayer bat] ++ [drawBall ball]
-
+    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball]
+drawUI (UI (Breakout Play score bat ball bricks board _) _) =
+    (drawBricks bricks) ++ 
+    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball]
+drawUI (UI (Breakout Over score bat ball bricks board _) _) =
+    (drawBricks bricks) ++ 
+    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball] 
+    
 
 bottomLayer :: Bat -> Widget Name
 bottomLayer bat =
-    translateBy loc $
-    B.border $ str "       Bat\n(<- / -> keys move)"
+    translateBy loc $ str "       Bat\n(⬅️ / ➡️ keys move)"
     where 
         loc = Location (round (batposition bat),28)
 
@@ -108,7 +113,7 @@ drawBricks (x:xs) = [drawBrick x] ++ (drawBricks xs)
 drawBrick:: Brick -> Widget Name
 drawBrick brick = 
     translateBy loc $
-    B.border $ str "   "
+    (withAttr brickAttr (str "   "))
     where 
         Vector2 posx posy = briposition brick
         loc = Location ((round posx),(round posy))
@@ -116,7 +121,7 @@ drawBrick brick =
 drawBall:: Ball -> Widget Name
 drawBall ball = 
     translateBy loc $
-    str "O"
+    str "🔴"
     where 
         Vector2 posx posy = bposition ball
         loc = Location ((round posx),(round posy))
@@ -137,11 +142,17 @@ drawBall ball =
 arrowAttr :: AttrName
 arrowAttr = attrName "attr"
 
+brickAttr :: AttrName
+brickAttr = attrName "brick"
+
+batAttr :: AttrName
+batAttr = attrName "bat"
+
 app :: M.App UI Tick Name
 app =
     M.App { M.appDraw = drawUI
           , M.appStartEvent = return ()
           , M.appHandleEvent = handleEvent
-          , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan)]
+          , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan), (brickAttr, bg V.magenta), (batAttr, bg V.yellow)]
           , M.appChooseCursor = M.neverShowCursor
           }
