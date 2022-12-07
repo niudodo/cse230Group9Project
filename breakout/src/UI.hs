@@ -66,7 +66,7 @@ drawBricks (x:xs) = [drawBrick x] ++ (drawBricks xs)
 drawBrick:: Brick -> Widget Name
 drawBrick brick = 
     translateBy loc $
-    B.border $ str "   "
+    (withAttr brickAttr (str "   "))
     where 
         Vector2 posx posy = briposition brick
         loc = T.Location ((round posx),(round posy))
@@ -97,12 +97,18 @@ appEvent _ = return ()
 arrowAttr :: AttrName
 arrowAttr = attrName "attr"
 
+brickAttr :: AttrName
+brickAttr = attrName "brick"
+
+
+
 app :: M.App St e Name
 app =
     M.App { M.appDraw = drawUi
           , M.appStartEvent = return ()
           , M.appHandleEvent = appEvent
-          , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan)]
+          , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan),
+                                                      (brickAttr, bg V.magenta)]
           , M.appChooseCursor = M.neverShowCursor
           }
 

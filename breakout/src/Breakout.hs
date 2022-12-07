@@ -176,7 +176,7 @@ updateBricks t b =
 
 genBricks:: Int-> Double ->[Brick]
 genBricks 0 _ = []
-genBricks n posY = genBricksRow 10 0 posY ++ genBricks (n-1) (posY+3)
+genBricks n posY = genBricksRow 10 0 posY ++ genBricks (n-1) (posY+2)
 
 
 genBricksRow:: Int-> Double -> Double ->[Brick]
@@ -187,5 +187,5 @@ genBricksRow n posX posY = new_brick ++ genBricksRow (n-1) new_posX posY
         new_brick = [Brick{
             briposition = Vector2 new_posX posY,
             briWidth = 5,
-            briHeight = 3
+            briHeight = 2
         }] 
