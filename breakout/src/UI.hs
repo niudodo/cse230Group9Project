@@ -31,8 +31,8 @@ import Brick.AttrMap
   , AttrName
   , attrName
   )
-import Breakout(Breakout(..),initGame)
-import Object (Brick(briposition), Ball(..))
+import Breakout(Breakout(..),initGame, updateBat)
+import Object (Brick(briposition), Ball(..), Bat(..))
 import Geometry(Vector2(..))
 data St =
     St {
@@ -49,13 +49,15 @@ data Name =
 drawUi :: St -> [Widget Name]
 drawUi st =
     (drawBricks (bricks (game st))) ++ 
-    [ (bottomLayer st)] ++ [drawBall (ball (game st))]
+    [bottomLayer (bat (game st))] ++ [drawBall (ball (game st))]
 
 
-bottomLayer :: St -> Widget Name
-bottomLayer st =
-    translateBy (st^.bottomLayerLocation) $
+bottomLayer :: Bat -> Widget Name
+bottomLayer bat =
+    translateBy loc $
     B.border $ str "       Bat\n(<- / -> keys move)"
+    where 
+        loc = T.Location ((batposition bat),28)
 
 drawBricks :: [Brick] -> [Widget Name]
 drawBricks [] = []

@@ -57,7 +57,7 @@ initGame n = Breakout {
     mode = Play,
     score = 0,
     bat = Bat {
-        batposition = 50,
+        batposition = 20,
         bwidth = 20,
         batvelocity = 2
     },
