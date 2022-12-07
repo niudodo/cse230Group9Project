@@ -117,7 +117,7 @@ drawBrick brick =
 drawBall:: Ball -> Widget Name
 drawBall ball = 
     translateBy loc $
-    str "😱"
+    str "🔴"
     where 
         Vector2 posx posy = bposition ball
         loc = Location ((round posx),(round posy))
