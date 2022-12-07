@@ -59,7 +59,7 @@ playGame = do
   chan <- newBChan 10
   void . forkIO $ forever $ do
     writeBChan chan Tick
-    threadDelay 400000
+    threadDelay 40000
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
   ui <- customMain initialVty builder (Just chan) app $ UI {
@@ -99,7 +99,7 @@ bottomLayer bat =
     translateBy loc $
     B.border $ str "       Bat\n(<- / -> keys move)"
     where 
-        loc = Location ((batposition bat),28)
+        loc = Location (round (batposition bat),28)
 
 drawBricks :: [Brick] -> [Widget Name]
 drawBricks [] = []

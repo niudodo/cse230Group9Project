@@ -61,10 +61,10 @@ timeStep = do
     bt <- use bat
     brks <- use bricks
     brd <- use board
-    let t = 1.0 
+    let t = 0.3
     bat .= updateBat t bt
     ball .= updateBall t b g 
-    bricks .= updateBricks t brks
+    bricks .= updateBricks t b g
 
 shiftBat :: MonadIO m => Int -> BreakoutT m ()
 shiftBat n = do
@@ -84,7 +84,7 @@ getShiftBat 1 b = b {batvelocity = -2}
 --             bricks = updateBricks t (bricks g)}
 
 ballRadius :: Double
-ballRadius = 5.0
+ballRadius = 1.0
 
 -- gameLoop :: Breakout -> IO ()
 -- gameLoop Breakout {mode = Start} = putStrLn "Push to Start"
@@ -125,7 +125,7 @@ initGame n = Breakout {
 }
 
 updateBat :: Double -> Bat -> Bat 
-updateBat t b = b {batposition = p + round (t * v) }
+updateBat t b = b {batposition = p + (t * v) }
     where p = batposition b
           v = batvelocity b
 
@@ -133,8 +133,16 @@ updateBat t b = b {batposition = p + round (t * v) }
 updateBall :: Double -> Ball -> Breakout -> Ball 
 updateBall t b g =
     case collision of 
-        Collision p t' bricks -> getNewBall t' b
+        Collision p t' bricks -> p
         None -> newBall
+    where newBall = getNewBall t b 
+          collision = checkCollision t newBall g
+          
+updateBricks :: Double -> Ball -> Breakout -> [Brick]
+updateBricks t b g =
+    case collision of 
+        Collision p t' bricks -> bricks
+        None -> _bricks g
     where newBall = getNewBall t b 
           collision = checkCollision t newBall g
 
@@ -191,7 +199,7 @@ checkBorder ball bricks board t= do
 checkCollBat:: Ball -> Bat ->[Brick] ->Double -> Collision
 checkCollBat ball bat brick t = do
     let Vector2 ballx bally = bposition ball
-    if bally + ballRadius >= int2Double (bheight bat) && ballx >= int2Double (batposition bat) && ballx <= int2Double (batposition bat + bwidth bat)
+    if bally + ballRadius >= int2Double (bheight bat) && ballx >= (batposition bat) && ballx <= (batposition bat + int2Double (bwidth bat))
         then Collision (reflectBall ball 1 (batvelocity bat)) t brick
     else None
 
@@ -217,10 +225,6 @@ data Collision = Collision {cball :: Ball,
                             time :: Double, cbricks :: [Brick]} | None
     deriving (Eq, Show)
 
-
-updateBricks :: Double -> [Brick] -> [Brick]
-updateBricks t b =
-    b -- todo
 
 genBricks:: Int-> Double ->[Brick]
 genBricks 0 _ = []

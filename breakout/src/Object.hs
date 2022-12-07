@@ -8,7 +8,7 @@ data Ball = Ball {
 } deriving (Eq, Show)
 
 data Bat = Bat {
-    batposition :: Int,
+    batposition :: Double,
     bwidth :: Int,
     bheight :: Int,
     batvelocity :: Double
