@@ -1,34 +1,79 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Breakout (
     Breakout,
     -- gameLoop,
-    processGame,
+    -- processGame,
     updateBat,
     updateBall,
-    updateBricks
+    updateBricks,
+    initGame,
+    shiftBat,
+    timeStep,
+    GameMode
 ) where
     
 import Object
     ( Ball(..),
       Bat(..),
       Board(..),
-      Brick(..) ) 
+      Brick(..) )
+
+import Control.Lens hiding (Empty) 
+
+import Control.Monad (forM_, mfilter, when, (<=<))
+import Control.Monad.IO.Class (MonadIO(..), liftIO)
+import Control.Monad.Trans.State (StateT(..), get, evalStateT, execStateT)
+import Control.Monad.IO.Class (MonadIO(..), liftIO)
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime, UTCTime (utctDayTime))
 import Geometry ( Vector2D, (^+^), (^*^), Vector2 (Vector2) )
 import GHC.Float (int2Double)
 
-data Breakout = Breakout {
-    mode :: GameMode,
-    score :: Int,
-
-    bat :: Bat,
-    ball :: Ball,
-    bricks :: [Brick],
-    board :: Board
-}
-
 data GameMode = Play | Start | Over
     deriving (Eq, Show)
+data Breakout = Breakout {
+    _mode :: GameMode,
+    _score :: Int,
+
+    _bat :: Bat,
+    _ball :: Ball,
+    _bricks :: [Brick],
+    _board :: Board
+} deriving (Eq, Show)
+makeLenses ''Breakout
+
+type BreakoutT = StateT Breakout
+type BreakoutM a = forall m. (Monad m) => BreakoutT m a
+
+evalBreakoutM :: BreakoutM a -> Breakout -> a
+evalBreakoutM m = runIdentity . evalStateT m
+
+execBreakoutM :: BreakoutM a -> Breakout -> Breakout
+execBreakoutM m = runIdentity . execStateT m
+
+timeStep :: MonadIO m => BreakoutT m ()
+timeStep = do
+    g <- get
+    b <- use ball
+    bt <- use bat
+    brks <- use bricks
+    brd <- use board
+    let t = 1.0 
+    bat .= updateBat t bt
+    ball .= updateBall t b g 
+    bricks .= updateBricks t brks
+
+
+
+
+-- processGame :: Double -> Breakout -> Breakout 
+-- processGame t g = 
+--     -- update lastStepTime, bat, bricks
+--     g {bat = updateBat t (_bat g), ball = updateBall t (ball g) g, 
+--             bricks = updateBricks t (bricks g)}
 
 ballRadius :: Double
 ballRadius = 5.0
@@ -51,32 +96,30 @@ ballRadius = 5.0
 --             gameLoop game'
 --     else putStrLn "test"
 
+
+
 initGame :: Int -> Breakout 
 initGame n = Breakout {
-    mode = Play,
-    score = 0,
-    bat = Bat {
+    _mode = Play,
+    _score = 0,
+    _bat = Bat {
         batposition = 50,
         bwidth = 20,
         batvelocity = 2
     },
-    bricks = genBricks n 3, -- TODO
-    board = Board {boardHeight = 200, boardWidth = 100}
+    _bricks = genBricks n 3, -- TODO
+    _board = Board {boardHeight = 200, boardWidth = 100}
 }
 
 shiftBat :: Int -> Breakout -> Breakout
-shiftBat n g = g {bat = getShiftBat n $ bat g}
+shiftBat n g = g {_bat = getShiftBat n $ _bat g}
 
 getShiftBat :: Int -> Bat -> Bat
 getShiftBat 0 b = b {batvelocity = -2}
 getShiftBat 1 b = b {batvelocity = 2}
 
 
-processGame :: Double -> Breakout -> Breakout 
-processGame t g = 
-    -- update lastStepTime, bat, bricks
-    g {bat = updateBat t (bat g), ball = updateBall t (ball g) g, 
-            bricks = updateBricks t (bricks g)}
+
 
 updateBat :: Double -> Bat -> Bat 
 updateBat t b = b {batposition = p + round (t * v) }
@@ -95,9 +138,9 @@ updateBall t b g =
 
 checkCollision :: Double -> Ball -> Breakout ->  Collision
 checkCollision curTime ball g = do
-    let collBat = checkCollBat ball (bat g) (bricks g) curTime
-    let collBoard = checkBorder ball (bricks g) (board g) curTime
-    let collBrick = checkBricks ball [] (bricks g) curTime
+    let collBat = checkCollBat ball (_bat g) (_bricks g) curTime
+    let collBoard = checkBorder ball (_bricks g) (_board g) curTime
+    let collBrick = checkBricks ball [] (_bricks g) curTime
     if collBat /= None
         then collBat
     else if collBoard /= None 
