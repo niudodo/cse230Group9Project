@@ -34,13 +34,14 @@ import Brick.AttrMap
   )
 import Brick.BChan
 
-import Breakout
+import Breakout (Breakout(..), timeStep, initGame, shiftBat)
 import Control.Concurrent (threadDelay, forkIO)
 import System.Posix.Internals (o_NOCTTY)
 import qualified Distribution.Simple.Setup as V
 import Language.Haskell.TH (VarBangType)
 import Control.Monad.RWS (Any(getAny))
 import Object
+import Geometry (Vector2(..))
 
 data UI = UI {
   _game :: Breakout, -- game
@@ -87,9 +88,42 @@ handleTick = do
 
 
 drawUI :: UI -> [Widget Name]
-drawUI ui = 
-  -- [drawBall ui ^. game . to ball, drawBat ...]
-   [B.border $ str "       Bat\n(<- / -> keys move)"]
+drawUI (UI (Breakout mode score bat ball bricks board) _) =
+    (drawBricks bricks) ++ 
+    [bottomLayer bat] ++ [drawBall ball]
+
+
+bottomLayer :: Bat -> Widget Name
+bottomLayer bat =
+    translateBy loc $
+    B.border $ str "       Bat\n(<- / -> keys move)"
+    where 
+        loc = Location ((batposition bat),28)
+
+drawBricks :: [Brick] -> [Widget Name]
+drawBricks [] = []
+drawBricks (x:xs) = [drawBrick x] ++ (drawBricks xs)
+
+drawBrick:: Brick -> Widget Name
+drawBrick brick = 
+    translateBy loc $
+    B.border $ str "   "
+    where 
+        Vector2 posx posy = briposition brick
+        loc = Location ((round posx),(round posy))
+
+drawBall:: Ball -> Widget Name
+drawBall ball = 
+    translateBy loc $
+    str "O"
+    where 
+        Vector2 posx posy = bposition ball
+        loc = Location ((round posx),(round posy))
+
+-- drawUI :: UI -> [Widget Name]
+-- drawUI ui = 
+--   -- [drawBall ui ^. game . to ball, drawBat ...]
+--    [B.border $ str "       Bat\n(<- / -> keys move)"]
 
 -- drawBall :: Ball -> Widget Name
 -- drawBall ball = translateBy () $ getLoc ball $ str "O"

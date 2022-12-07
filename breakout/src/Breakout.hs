@@ -3,7 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Breakout (
-    Breakout,
+    Breakout(..),
     -- gameLoop,
     -- processGame,
     updateBat,
