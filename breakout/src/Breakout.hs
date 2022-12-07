@@ -67,8 +67,6 @@ timeStep = do
     bricks .= updateBricks t brks
 
 
-
-
 -- processGame :: Double -> Breakout -> Breakout 
 -- processGame t g = 
 --     -- update lastStepTime, bat, bricks
@@ -103,11 +101,16 @@ initGame n = Breakout {
     _mode = Play,
     _score = 0,
     _bat = Bat {
-        batposition = 50,
+        batposition = 20,
         bwidth = 20,
-        batvelocity = 2
+        batvelocity = 0,
+        bheight = 28
     },
-    _bricks = genBricks n 3, -- TODO
+    _ball = Ball{
+        bposition = (Vector2 20.0 27.0),
+        bvelocity = (Vector2 0.0 (-1.0))
+    },
+    _bricks = genBricks n 0 , -- TODO
     _board = Board {boardHeight = 200, boardWidth = 100}
 }
 
@@ -117,9 +120,6 @@ shiftBat n g = g {_bat = getShiftBat n $ _bat g}
 getShiftBat :: Int -> Bat -> Bat
 getShiftBat 0 b = b {batvelocity = -2}
 getShiftBat 1 b = b {batvelocity = 2}
-
-
-
 
 updateBat :: Double -> Bat -> Bat 
 updateBat t b = b {batposition = p + round (t * v) }
