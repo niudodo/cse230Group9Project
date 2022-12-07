@@ -16,6 +16,7 @@ import qualified Brick.Types
 import Brick.Types (locationRowL, locationColumnL, Location(..), Widget)
 import Control.Monad (void, forever, when, unless)
 import qualified Brick.Main as M
+import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.Center as C
 import Control.Monad.Trans.State (execStateT)
@@ -89,16 +90,9 @@ handleShift n = do
 
 
 drawUI :: UI -> [Widget Name]
-drawUI (UI (Breakout Start score bat ball bricks board life) _) =
+drawUI (UI (Breakout mode score bat ball bricks board life) _) =
     (drawBricks bricks) ++ 
-    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball]
-drawUI (UI (Breakout Play score bat ball bricks board _) _) =
-    (drawBricks bricks) ++ 
-    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball]
-drawUI (UI (Breakout Over score bat ball bricks board _) _) =
-    (drawBricks bricks) ++ 
-    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball] 
-    
+    [withAttr batAttr $ bottomLayer bat] ++ [drawBall ball] ++ [drawStats mode score life (boardWidth board)]
 
 bottomLayer :: Bat -> Widget Name
 bottomLayer bat =
@@ -137,7 +131,35 @@ drawBall ball =
 -- drawBricks :: [Brick] -> [Widget Name]
 
 -- drawBat :: Bat -> Widget Name
+drawStats :: GameMode -> Int -> Int -> Int -> Widget Name
+drawStats mode score life locX= hLimit (locX+11)
+  $ vBox [ padTop (Pad 1) $ padLeft (Pad locX) $ drawScore score 
+         , padTop (Pad 1) $ padLeft (Pad locX) $ drawLife life
+         , padTop (Pad 2) $ padLeft (Pad locX) $ drawGameMode mode 
+         ]
+        
+drawScore :: Int ->  Widget Name
+drawScore n  = withBorderStyle BS.unicodeBold
+    $ B.borderWithLabel (str "Score")
+    $ C.hCenter
+    $ padAll 1
+    $ str $ show n
+drawLife :: Int-> Widget Name
+drawLife 0 = emptyWidget
+drawLife n = hBox (drawEmoji n)
+    where 
+        drawEmoji::Int -> [Widget Name]
+        drawEmoji 0 = []
+        drawEmoji n = (padLeft (Pad 1) $ str "❤️") : drawEmoji (n-1)
+        
+drawGameMode :: GameMode -> Widget Name
+drawGameMode dead = 
+  case dead of 
+    Over -> withAttr gameOverAttr $ C.hCenter $ str "GAME OVER"
+    _ -> emptyWidget
 
+gameOverAttr :: AttrName
+gameOverAttr = attrName "gameOver"
 
 arrowAttr :: AttrName
 arrowAttr = attrName "attr"
@@ -153,6 +175,10 @@ app =
     M.App { M.appDraw = drawUI
           , M.appStartEvent = return ()
           , M.appHandleEvent = handleEvent
-          , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan), (brickAttr, bg V.magenta), (batAttr, bg V.yellow)]
+          , M.appAttrMap = const $ attrMap V.defAttr [
+                (arrowAttr, fg V.cyan), 
+                (brickAttr, bg V.magenta),
+                (batAttr, bg V.yellow),
+                (gameOverAttr, fg V.red `V.withStyle` V.bold)]
           , M.appChooseCursor = M.neverShowCursor
           }
