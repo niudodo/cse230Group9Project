@@ -32,7 +32,7 @@ import Brick.AttrMap
   , attrName
   )
 import Breakout(Breakout(..),initGame)
-import Object (Brick(briposition))
+import Object (Brick(briposition), Ball(..))
 import Geometry(Vector2(..))
 data St =
     St {
@@ -49,7 +49,7 @@ data Name =
 drawUi :: St -> [Widget Name]
 drawUi st =
     (drawBricks (bricks (game st))) ++ 
-    [ (bottomLayer st)]
+    [ (bottomLayer st)] ++ [drawBall (ball (game st))]
 
 
 bottomLayer :: St -> Widget Name
@@ -68,6 +68,15 @@ drawBrick brick =
     where 
         Vector2 posx posy = briposition brick
         loc = T.Location ((round posx),(round posy))
+
+drawBall:: Ball -> Widget Name
+drawBall ball = 
+    translateBy loc $
+    str "O"
+    where 
+        Vector2 posx posy = bposition ball
+        loc = T.Location ((round posx),(round posy))
+
 
 appEvent :: T.BrickEvent Name e -> T.EventM Name St ()
 
@@ -96,4 +105,4 @@ app =
           }
 
 main :: IO ()
-main = void $ M.defaultMain app $ St (T.Location (20, 10)) (initGame 10)
+main = void $ M.defaultMain app $ St (T.Location (20, 28)) (initGame 3)
