@@ -10,7 +10,7 @@ import Lens.Micro.TH (makeLenses)
 import Lens.Micro.Mtl
 import Control.Monad (void)
 import qualified Graphics.Vty as V
-
+import Brick hiding (Down)
 import qualified Brick.Types as T
 import Brick.Types (locationRowL, locationColumnL, Location(..), Widget)
 import qualified Brick.Main as M
@@ -22,6 +22,8 @@ import Brick.Widgets.Core
   , relativeTo
   , reportExtent
   , withDefAttr
+  , padLeft
+  , padRight
   )
 import Brick.Util (fg)
 import Brick.AttrMap
@@ -29,69 +31,69 @@ import Brick.AttrMap
   , AttrName
   , attrName
   )
+import Breakout(Breakout(..),initGame)
+import Object (Brick(briposition))
+import Geometry(Vector2(..))
+data St =
+    St {
+         _bottomLayerLocation :: T.Location,
+        game :: Breakout
+       }
 
-import Breakout
-import System.Posix.Internals (o_NOCTTY)
-import qualified Distribution.Simple.Setup as V
-import Language.Haskell.TH (VarBangType)
-import Control.Monad.RWS (Any(getAny))
+makeLenses ''St
 
-data UI = UI {
-  _game :: Breakout, -- game
-  _paused :: Bool
-}
-makeLenses ''UI
+data Name =
+    MiddleLayerElement
+    deriving (Ord, Eq, Show)
 
-data Tick = Tick
-
-Type Name = ()
-
-playGame :: IO Game
-playGame = do
-  initialGame <- initGame
-  let builder = V.mkVty V.defaultConfig
-  initialVty <- builder
-  ui <- customMain initialVty builder Nothing app $ UI {
-    _game = initialGame
-  }
-
-handleEvent :: BrickEvent Name Tick -> EventM Name UI ()
-handleEvent (AppEvent Tick             ) = handleTick
-handleEvent (VtyEvent (V.EvKey V.KRight  [])) = exec (shift Right)
-handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = exec (shift Left)
-handleEvent (VtyEvent (V.EvKey V.Kesc [])) = halt
-handleEvent _ = pure ()
-
-handleTick :: EventM Name UI ()
-handleTick = do 
-  ui <- get
-  unless (ui ^. game . to mode != Over) $ do
-    game .= processGame 1.0 $ ui ^. game 
+drawUi :: St -> [Widget Name]
+drawUi st =
+    (drawBricks (bricks (game st)))++
+    [padLeft Max $ padRight (Pad 2) (bottomLayer st)]
 
 
-drawUI :: UI -> [Widget Name]
-drawUI ui = 
-  [drawBall ui ^. game . to ball, drawBat ...]
-
-drawBall :: Ball -> Widget Name
-drawBall ball = translateBy () $ getLoc ball $ str "O"
+bottomLayer :: St -> Widget Name
+bottomLayer st =
+    translateBy (st^.bottomLayerLocation) $
+    B.border $ str "       Bat\n(<- / -> keys move)"
 
 drawBricks :: [Brick] -> [Widget Name]
+drawBricks [] = []
+drawBricks (x:xs) = [drawBrick x] ++ (drawBricks xs)
 
-drawBat :: Bat -> Widget Name
+drawBrick:: Brick -> Widget Name
+drawBrick brick = 
+    translateBy loc $
+    B.border $ str "   "
+    where 
+        Vector2 posx posy = briposition brick
+        loc = T.Location ((round posx),(round posy))
 
+appEvent :: T.BrickEvent Name e -> T.EventM Name St ()
+
+-- appEvent (T.VtyEvent (V.EvKey V.KDown  [])) =
+--     bottomLayerLocation.locationRowL %= (+ 1)
+-- appEvent (T.VtyEvent (V.EvKey V.KUp    [])) =
+--     bottomLayerLocation.locationRowL %= (subtract 1)
+appEvent (T.VtyEvent (V.EvKey V.KRight [])) =
+    bottomLayerLocation.locationColumnL %= (+ 1)
+appEvent (T.VtyEvent (V.EvKey V.KLeft  [])) =
+    bottomLayerLocation.locationColumnL %= (subtract 1)
+
+appEvent (T.VtyEvent (V.EvKey V.KEsc [])) = M.halt
+appEvent _ = return ()
 
 arrowAttr :: AttrName
 arrowAttr = attrName "attr"
 
-app :: M.App UI Tick Name
+app :: M.App St e Name
 app =
-    M.App { M.appDraw = drawUI
+    M.App { M.appDraw = drawUi
           , M.appStartEvent = return ()
-          , M.appHandleEvent = handleEvent
+          , M.appHandleEvent = appEvent
           , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan)]
           , M.appChooseCursor = M.neverShowCursor
           }
 
 main :: IO ()
-main = void $ M.defaultMain app $ St (T.Location (20, 10))
+main = void $ M.defaultMain app $ St (T.Location (20, 10)) (initGame 10)

@@ -1,17 +1,18 @@
 module Breakout (
-    Breakout,
-    gameLoop,
+    Breakout(..),
+    -- gameLoop,
     processGame,
     updateBat,
     updateBall,
-    updateBricks
+    updateBricks,
+    initGame
 ) where
     
 import Object
-    ( Ball(bvelocity, bposition),
-      Bat(batvelocity, batposition),
-      Board(boardWidth, boardHeight),
-      Brick ) 
+    ( Ball(..),
+      Bat(..),
+      Board(..),
+      Brick(..) ) 
 import Data.Time.Clock (getCurrentTime, UTCTime, diffUTCTime, addUTCTime, NominalDiffTime)
 import Data.Time (NominalDiffTime, UTCTime (utctDayTime))
 import Geometry ( Vector2D, (^+^), (^*^), Vector2 (Vector2) )
@@ -33,25 +34,25 @@ data GameMode = Play | Start | Over
 ballRadius :: Double
 ballRadius = 5.0
 
-gameLoop :: Breakout -> IO ()
-gameLoop Breakout {mode = Start} = putStrLn "Push to Start"
-gameLoop g = do
-    curTime <- getCurrentTime
-    let timeDiff = realToFrac (diffUTCTime curTime (lastStepTime g))
+-- gameLoop :: Breakout -> IO ()
+-- gameLoop Breakout {mode = Start} = putStrLn "Push to Start"
+-- gameLoop g = do
+--     curTime <- getCurrentTime
+--     let timeDiff = realToFrac (diffUTCTime curTime (lastStepTime g))
 
-    -- process keyboard event and change the speed of the objects
-    -- TODO let game' = processIO g events
-    let game' = g
+--     -- process keyboard event and change the speed of the objects
+--     -- TODO let game' = processIO g events
+--     let game' = g
 
-    let game'' = processGame timeDiff game' -- update objects
+--     let game'' = processGame timeDiff game' -- update objects
 
-    if mode game'' == Play then 
-        do
-            -- render
-            gameLoop game'
-    else putStrLn "test"
+--     if mode game'' == Play then 
+--         do
+--             -- render
+--             gameLoop game'
+--     else putStrLn "test"
 
-initGame :: n -> Breakout 
+initGame :: Int -> Breakout 
 initGame n = Breakout {
     mode = Play,
     score = 0,
@@ -60,8 +61,8 @@ initGame n = Breakout {
         bwidth = 20,
         batvelocity = 2
     },
-    bricks = genBricks n , -- TODO
-    board = Board {boardHeight = 200, boardWitdth = 100}
+    bricks = genBricks n 0 , -- TODO
+    board = Board {boardHeight = 200, boardWidth = 100}
 }
 
 processGame :: Double -> Breakout -> Breakout 
