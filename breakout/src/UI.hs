@@ -48,17 +48,21 @@ Type Name = ()
 
 playGame :: IO Game
 playGame = do
-  initialGame <- initGame
+  initialGame <- initGame 3
+  chan <- newBChan 10
+  void . forkIO $ forever $ do
+    writeBChan chan Tick
+    threadDelay delay
   let builder = V.mkVty V.defaultConfig
   initialVty <- builder
-  ui <- customMain initialVty builder Nothing app $ UI {
+  ui <- customMain initialVty builder (Just chan) app $ UI {
     _game = initialGame
   }
 
 handleEvent :: BrickEvent Name Tick -> EventM Name UI ()
 handleEvent (AppEvent Tick             ) = handleTick
-handleEvent (VtyEvent (V.EvKey V.KRight  [])) = exec (shift Right)
-handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = exec (shift Left)
+handleEvent (VtyEvent (V.EvKey V.KRight  [])) = handleShift 0
+handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = handleShift 1
 handleEvent (VtyEvent (V.EvKey V.Kesc [])) = halt
 handleEvent _ = pure ()
 
@@ -68,10 +72,16 @@ handleTick = do
   unless (ui ^. game . to mode != Over) $ do
     game .= processGame 1.0 $ ui ^. game 
 
+handleShift :: Int -> EventM Name UI ()
+handleLeft n = do 
+  ui <- get
+  do game .= shiftBat n $ ui ^. game
+
 
 drawUI :: UI -> [Widget Name]
 drawUI ui = 
-  [drawBall ui ^. game . to ball, drawBat ...]
+  -- [drawBall ui ^. game . to ball, drawBat ...]
+   B.border $ str "       Bat\n(<- / -> keys move)"
 
 drawBall :: Ball -> Widget Name
 drawBall ball = translateBy () $ getLoc ball $ str "O"
@@ -92,6 +102,3 @@ app =
           , M.appAttrMap = const $ attrMap V.defAttr [(arrowAttr, fg V.cyan)]
           , M.appChooseCursor = M.neverShowCursor
           }
-
-main :: IO ()
-main = void $ M.defaultMain app $ St (T.Location (20, 10))

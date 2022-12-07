@@ -1,6 +1,6 @@
 module Object where 
 
-import Geometry (Vector2D)
+import Geometry (Vector2(..), Vector2D)
 
 data Ball = Ball {
     bposition :: Vector2D,
@@ -25,9 +25,9 @@ data Board = Board {
     boardHeight :: Int
 } deriving (Eq, Show)
 
-genBrick :: n -> [Brick]
+genBrick :: Int -> [Brick]
 genBrick 0 = [Brick {
-        briposition = Vector2D 20.0 100.0, 
+        briposition = Vector2 20.0 100.0, 
         briWidth = 10.0, 
         briHeight = 10.0
         }]
