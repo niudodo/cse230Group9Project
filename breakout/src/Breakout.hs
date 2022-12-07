@@ -12,7 +12,8 @@ module Breakout (
     initGame,
     shiftBat,
     timeStep,
-    GameMode(..)
+    GameMode(..),
+    isGameOver
 ) where
     
 import Object
@@ -62,10 +63,53 @@ timeStep = do
     bt <- use bat
     brks <- use bricks
     brd <- use board
+    scr <- use score
+    lf <- use life
     let t = 0.3
-    bat .= updateBat t bt
-    ball .= updateBall t b g 
-    bricks .= updateBricks t b g
+    let new_bat = updateBat t brd bt
+    let new_ball = updateBall t b g 
+    let new_bricks = updateBricks t b g
+           
+    let if_valid = checkBall new_ball new_bat brd
+
+    ball .= getNewBallU if_valid new_ball
+    bat .= getNewBat if_valid new_bat
+    life .= getNewLife if_valid lf
+
+    mode .= getNewMode if_valid lf
+
+    bricks .= new_bricks
+    score .= scr + (length brks - length new_bricks)
+
+isGameOver :: Breakout -> Bool
+isGameOver b = _mode b == Over
+
+getNewMode :: Bool -> Int -> GameMode 
+getNewMode False 1 = Over
+getNewMode _ _ = Play
+
+getNewLife :: Bool -> Int -> Int
+getNewLife True i = i
+getNewLife False i = i - 1
+
+getNewBallU :: Bool -> Ball -> Ball
+getNewBallU True b = b
+getNewBallU False _ = Ball{
+        bposition = (Vector2 25.0 20.0),
+        bvelocity = (Vector2 0.0 (1.0))
+    }
+
+getNewBat :: Bool -> Bat -> Bat
+getNewBat True b = b
+getNewBat False _ = Bat {
+        batposition = 20,
+        bwidth = 20,
+        batvelocity = 0,
+        bheight = 28
+    }
+
+checkBall :: Ball -> Bat -> Board -> Bool 
+checkBall bl@(Ball (Vector2 x y) v) (Bat _ _ bah _) (Board _ boh) =  y < int2Double boh
 
 shiftBat :: MonadIO m => Int -> BreakoutT m ()
 shiftBat n = do
@@ -105,8 +149,6 @@ ballRadius = 1.0
 --             gameLoop game'
 --     else putStrLn "test"
 
-
-
 initGame :: Int -> Breakout 
 initGame n = Breakout {
     _mode = Play,
@@ -122,14 +164,14 @@ initGame n = Breakout {
         bvelocity = (Vector2 0.0 (1.0))
     },
     _bricks = genBricks n 0 , -- TODO
-    _board = Board {boardHeight = 30, boardWidth = 60},
+    _board = Board {boardHeight = 30, boardWidth = 58},
     _life = 3
 }
 
-updateBat :: Double -> Bat -> Bat 
-updateBat t b = b {batposition = p + (t * v) }
-    where p = batposition b
-          v = batvelocity b
+updateBat :: Double -> Board -> Bat -> Bat 
+updateBat t brd@(Board bw _) b@(Bat p w _ v) = b {batposition = final_p }
+    where new_p = p + (t * v)
+          final_p = if new_p <= 0 then 0 else if new_p + int2Double w >= int2Double bw then p else new_p
 
 -- update Ball position and velocity
 updateBall :: Double -> Ball -> Breakout -> Ball 
@@ -137,7 +179,7 @@ updateBall t b g =
     case collision of 
         Collision p t' bricks -> p
         None -> newBall
-    where newBall = getNewBall t b 
+    where newBall = getNewBall t b
           collision = checkCollision t newBall g
           
 updateBricks :: Double -> Ball -> Breakout -> [Brick]

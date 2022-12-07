@@ -35,7 +35,7 @@ import Brick.AttrMap
   )
 import Brick.BChan
 
-import Breakout (Breakout(..), GameMode(..), timeStep, initGame, shiftBat)
+import Breakout (Breakout(..), GameMode(..), timeStep, initGame, shiftBat, isGameOver)
 import Control.Concurrent (threadDelay, forkIO)
 import System.Posix.Internals (o_NOCTTY)
 import qualified Distribution.Simple.Setup as V
@@ -78,15 +78,17 @@ handleEvent _ = pure ()
 handleTick :: EventM Name UI ()
 handleTick = do 
   ui <- get
-  g' <- execStateT timeStep $ ui ^. game
-  -- unless (mod (ui ^. game) /= Over ) $ do
-  game .= g'
+  unless (ui ^. game . to isGameOver) $ do 
+    g' <- execStateT timeStep $ ui ^. game
+    -- unless (mod (ui ^. game) /= Over ) $ do
+    game .= g'
 
 handleShift :: Int -> EventM Name UI ()
 handleShift n = do 
   ui <- get
-  g' <-  execStateT (shiftBat n) $ ui ^. game
-  game .= g'
+  unless (ui ^. game . to isGameOver) $ do 
+    g' <-  execStateT (shiftBat n) $ ui ^. game
+    game .= g'
 
 
 drawUI :: UI -> [Widget Name]
@@ -115,7 +117,7 @@ drawBrick brick =
 drawBall:: Ball -> Widget Name
 drawBall ball = 
     translateBy loc $
-    str "🔴"
+    str "😱"
     where 
         Vector2 posx posy = bposition ball
         loc = Location ((round posx),(round posy))
