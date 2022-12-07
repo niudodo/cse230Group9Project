@@ -69,8 +69,8 @@ playGame = do
 
 handleEvent :: BrickEvent Name Tick -> EventM Name UI ()
 handleEvent (AppEvent Tick             ) = handleTick
--- handleEvent (VtyEvent (V.EvKey V.KRight  [])) = handleShift 0
--- handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = handleShift 1
+handleEvent (VtyEvent (V.EvKey V.KRight  [])) = handleShift 0
+handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = handleShift 1
 handleEvent (VtyEvent (V.EvKey V.KEsc [])) = halt
 handleEvent _ = pure ()
 
@@ -81,10 +81,11 @@ handleTick = do
   -- unless (mod (ui ^. game) /= Over ) $ do
   game .= g'
 
--- handleShift :: Int -> EventM Name UI ()
--- handleShift n = do 
---   ui <- get
---   do game .= shiftBat n $ ui ^. game
+handleShift :: Int -> EventM Name UI ()
+handleShift n = do 
+  ui <- get
+  g' <-  execStateT (shiftBat n) $ ui ^. game
+  game .= g'
 
 
 drawUI :: UI -> [Widget Name]

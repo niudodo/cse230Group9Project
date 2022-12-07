@@ -54,7 +54,7 @@ evalBreakoutM m = runIdentity . evalStateT m
 execBreakoutM :: BreakoutM a -> Breakout -> Breakout
 execBreakoutM m = runIdentity . execStateT m
 
-timeStep :: MonadIO m => BreakoutT m ()
+timeStep :: MonadIO m => BreakoutT m () 
 timeStep = do
     g <- get
     b <- use ball
@@ -65,6 +65,16 @@ timeStep = do
     bat .= updateBat t bt
     ball .= updateBall t b g 
     bricks .= updateBricks t brks
+
+shiftBat :: MonadIO m => Int -> BreakoutT m ()
+shiftBat n = do
+    bt <- use bat
+    bat .= getShiftBat n bt 
+
+getShiftBat :: Int -> Bat -> Bat
+getShiftBat 0 b = b {batvelocity = 2}
+getShiftBat 1 b = b {batvelocity = -2}
+
 
 
 -- processGame :: Double -> Breakout -> Breakout 
@@ -107,19 +117,12 @@ initGame n = Breakout {
         bheight = 28
     },
     _ball = Ball{
-        bposition = (Vector2 20.0 27.0),
-        bvelocity = (Vector2 0.0 (-1.0))
+        bposition = (Vector2 25.0 20.0),
+        bvelocity = (Vector2 0.0 (1.0))
     },
     _bricks = genBricks n 0 , -- TODO
     _board = Board {boardHeight = 200, boardWidth = 100}
 }
-
-shiftBat :: Int -> Breakout -> Breakout
-shiftBat n g = g {_bat = getShiftBat n $ _bat g}
-
-getShiftBat :: Int -> Bat -> Bat
-getShiftBat 0 b = b {batvelocity = -2}
-getShiftBat 1 b = b {batvelocity = 2}
 
 updateBat :: Double -> Bat -> Bat 
 updateBat t b = b {batposition = p + round (t * v) }
