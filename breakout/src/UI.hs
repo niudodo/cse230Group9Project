@@ -48,8 +48,8 @@ data Name =
 
 drawUi :: St -> [Widget Name]
 drawUi st =
-    (drawBricks (bricks (game st)))++
-    [padLeft Max $ padRight (Pad 2) (bottomLayer st)]
+    (drawBricks (bricks (game st))) ++ 
+    [ (bottomLayer st)]
 
 
 bottomLayer :: St -> Widget Name
