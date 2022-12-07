@@ -13,7 +13,8 @@ module Breakout (
     shiftBat,
     timeStep,
     GameMode(..),
-    isGameOver
+    isGameOver,
+    initGameIO
 ) where
     
 import Object
@@ -167,6 +168,11 @@ initGame n = Breakout {
     _board = Board {boardHeight = 30, boardWidth = 58},
     _life = 3
 }
+
+initGameIO :: Int -> IO Breakout
+initGameIO n = do 
+    pure $ initGame n
+
 
 updateBat :: Double -> Board -> Bat -> Bat 
 updateBat t brd@(Board bw _) b@(Bat p w _ v) = b {batposition = final_p }

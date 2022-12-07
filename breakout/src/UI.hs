@@ -19,6 +19,7 @@ import qualified Brick.Main as M
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Border as B
 import qualified Brick.Widgets.Center as C
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State (execStateT)
 import Brick.Widgets.Core
   ( translateBy
@@ -35,7 +36,7 @@ import Brick.AttrMap
   )
 import Brick.BChan
 
-import Breakout (Breakout(..), GameMode(..), timeStep, initGame, shiftBat, isGameOver)
+import Breakout (Breakout(..), GameMode(..), timeStep, initGame, shiftBat, isGameOver, initGameIO)
 import Control.Concurrent (threadDelay, forkIO)
 import System.Posix.Internals (o_NOCTTY)
 import qualified Distribution.Simple.Setup as V
@@ -72,8 +73,17 @@ handleEvent :: BrickEvent Name Tick -> EventM Name UI ()
 handleEvent (AppEvent Tick             ) = handleTick
 handleEvent (VtyEvent (V.EvKey V.KRight  [])) = handleShift 0
 handleEvent (VtyEvent (V.EvKey V.KLeft  [])) = handleShift 1
+handleEvent (VtyEvent (V.EvKey (V.KChar 'r') [])) = restart
+handleEvent (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt
 handleEvent (VtyEvent (V.EvKey V.KEsc [])) = halt
 handleEvent _ = pure ()
+
+
+restart :: EventM Name UI ()
+restart = do
+  -- lvl <- use $ game . level
+  g <- liftIO $ initGameIO 3
+  game .= g
 
 handleTick :: EventM Name UI ()
 handleTick = do 
